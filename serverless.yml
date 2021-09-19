@@ -1,0 +1,128 @@
+service: tveditor-proxy-api
+custom:
+  service: "tveditor-proxy-api"
+  stage: ${opt:stage, self:provider.stage}
+  userPoolId: ${opt:userPoolId}
+  region: ${opt:region, self:provider.region}
+  flexgetApiUrl: ${opt:flexgetApiUrl}
+  flexgetApiUser: ${opt:flexgetApiUser}
+  flexgetApiPass: ${opt:flexgetApiPass}
+  taskName: ${opt:taskName}
+  tvdbApiUrl: ${opt:tvdbApiUrl}
+  tvdbPin: ${opt:tvdbPin}
+  tvdbApiKey: ${opt:tvdbApiKey}
+  cognitoClientId: ${opt:cognitoClientId}
+  
+plugins:
+  - serverless-webpack
+  - serverless-attach-managed-policy
+  - serverless-offline
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+  timeout: 30
+
+  environment:
+    USER_POOL_ID: "${self:custom.userPoolId}"
+    API_SERVICE: "${self:service}"
+    STAGE: "${self:provider.stage}"
+    FLEXGET_API_URL: "${self:custom.flexgetApiUrl}"
+    FLEXGET_API_USER: "${self:custom.flexgetApiUser}"
+    FLEXGET_API_PASSWORD: "${self:custom.flexgetApiPass}"
+    TASK_NAME: "${self:custom.taskName}"
+    TVDB_API_URL: "${self:custom.tvdbApiUrl}"
+    TVDB_PIN: "${self:custom.tvdbPin}"
+    TVDB_API_KEY: "${self:custom.tvdbApiKey}"
+    COGNITO_CLIENT_ID: "${self:custom.cognitoClientId}"
+
+resources:
+  Resources:
+    TVEditorProxyAPIRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /lambda/
+        RoleName: TVEditorProxyAPIRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: TVEditorProxyAPIPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - "Fn::Join":
+                        - ":"
+                        - - "arn:aws:logs"
+                          - Ref: "AWS::Region"
+                          - Ref: "AWS::AccountId"
+                          - "log-group:/aws/lambda/*:*:*"
+                - Effect: Allow
+                  Action:
+                    - secretsmanager:ListSecrets
+                    - secretsmanager:GetSecretValue
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - cognito-idp:AdminGetUser
+                    - cognito-idp:AdminSetUserPassword
+                    - cognito-idp:AdminCreateUser
+                  Resource: "arn:aws:cognito-idp:${self:provider.region}:*:userpool/${self:custom.userPoolId}"
+
+functions:
+  auth:
+    handler: ./src/auth/auth.authorizer
+    role: TVEditorProxyAPIRole
+  proxy-api:
+    handler: src/functions/proxy/index.handler
+    role: TVEditorProxyAPIRole
+    timeout: 30
+    events:
+      - http:
+          method: any
+          path: /api/{proxy+}
+          authorizer: auth
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+            cacheControl: 'max-age=600, s-maxage=600, proxy-revalidate'
+  auth-api:
+    handler: src/functions/auth/index.handler
+    role: TVEditorProxyAPIRole
+    timeout: 30
+    events:
+      - http:
+          method: any
+          path: /auth/{proxy+}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+            cacheControl: 'max-age=600, s-maxage=600, proxy-revalidate'
