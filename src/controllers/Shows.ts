@@ -5,6 +5,16 @@ import { TVDBService } from '../services/TVDBService';
 const flexgetService = new FlexgetService();
 const tvdbService = new TVDBService();
 
+const getTvDbShow = async (id: number, name: string) => {
+  const showMapping = await flexgetService.getTVDBMapping(id);
+
+  if (showMapping) {
+    return tvdbService.getSeries(showMapping.tvdbId);
+  }
+
+  return tvdbService.searchOne(name);
+};
+
 export const getShows = async (_req: express.Request, res: express.Response, next: express.NextFunction) => {
   const foundShows = await flexgetService.getSeries();
   console.log('FOUND SHOWS =>', foundShows);
@@ -12,18 +22,17 @@ export const getShows = async (_req: express.Request, res: express.Response, nex
     foundShows.map(async (f) => {
       return {
         flexget: f,
-        tvdb: await tvdbService.searchOne(f.name),
+        tvdb: await getTvDbShow(f.id, f.name),
       };
     }),
   );
 
-  console.log('SHOWS TO RETURN => ', JSON.stringify(shows));
   return res.json(shows);
 };
 
 export const postShow = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { name, season, episode } = req.body;
-  const resp = await flexgetService.addSeries(name, season, episode);
+  const { name, season, episode, tvdbId } = req.body;
+  const resp = await flexgetService.addSeries(name, season, episode, tvdbId);
   return res.json(resp);
 };
 
@@ -43,7 +52,7 @@ export const deleteShow = async (req: express.Request, res: express.Response, ne
   const flexgetShow = await flexgetService.getSingleSeries(showId);
 
   if (flexgetShow) {
-    const resp = await flexgetService.deleteSeries(showId, flexgetShow.name);
+    const resp = await flexgetService.deleteSeries(+showId, flexgetShow.name);
     return res.json(resp);
   }
   return;

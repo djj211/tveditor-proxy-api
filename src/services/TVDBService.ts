@@ -19,6 +19,7 @@ interface TVDBResp {
       status: string;
       primary_language: string;
       overview: string;
+      tvdb_id: number;
       name_translated?: {
         eng?: string;
       };
@@ -75,6 +76,10 @@ export class TVDBService {
     };
   };
 
+  public getSeries = async (id: string): Promise<TVDBItem> => {
+    return this.searchOne(id);
+  };
+
   public searchOne = async (show: string): Promise<TVDBItem> => {
     const resp = await this.search(show, 5);
     const foundShow = resp.find((t) => t.name === show);
@@ -94,9 +99,7 @@ export class TVDBService {
     );
     const today = new Date();
     const allDataPromises = resp.data.map(async (t) => {
-      const plainId = t.objectID.split('-')[1];
-
-      const seriesEps = await this.episodes(plainId);
+      const seriesEps = await this.episodes(t.tvdb_id);
 
       const latest = seriesEps.data.episodes.reduce(
         (acc, curr) => {
@@ -133,7 +136,9 @@ export class TVDBService {
       const nextUpIsLatest = nextUp.seasonNumber === latest.seasonNumber && nextUp.number === latest.number;
 
       return {
-        ...t,
+        aliases: t.aliases,
+        image_url: t.image_url,
+        status: t.status,
         name: t.primary_language !== 'eng' && t.name_translated?.eng ? t.name_translated?.eng : t.name,
         overview: t.primary_language !== 'eng' && t.overview_translated?.eng ? t.overview_translated?.eng : t.overview,
         id: t.objectID,
@@ -153,7 +158,7 @@ export class TVDBService {
     return await Promise.all(allDataPromises);
   };
 
-  private episodes = async (id: string): Promise<EpisodeResp> => {
+  private episodes = async (id: string | number): Promise<EpisodeResp> => {
     const config = await this.getConfig();
     const { data: resp } = await axios.get<EpisodeResp>(
       `${this.BASE_URL}/series/${id}/episodes/default?page=0&season=0`,

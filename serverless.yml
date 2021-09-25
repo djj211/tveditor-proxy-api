@@ -2,6 +2,7 @@ service: tveditor-proxy-api
 custom:
   service: "tveditor-proxy-api"
   stage: ${opt:stage, self:provider.stage}
+  tvEditorTable: "tveditor-${self:custom.stage}"
   userPoolId: ${opt:userPoolId}
   region: ${opt:region, self:provider.region}
   flexgetApiUrl: ${opt:flexgetApiUrl}
@@ -30,6 +31,7 @@ provider:
 
   environment:
     USER_POOL_ID: "${self:custom.userPoolId}"
+    TV_EDITOR_TABLE: "${self:custom.tvEditorTable}"
     API_SERVICE: "${self:service}"
     STAGE: "${self:provider.stage}"
     FLEXGET_API_URL: "${self:custom.flexgetApiUrl}"
@@ -84,6 +86,69 @@ resources:
                     - cognito-idp:AdminSetUserPassword
                     - cognito-idp:AdminCreateUser
                   Resource: "arn:aws:cognito-idp:${self:provider.region}:*:userpool/${self:custom.userPoolId}"
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:DescribeTable"
+                    - "dynamodb:DescribeStream"
+                    - "dynamodb:ListStreams"
+                    - "dynamodb:GetShardIterator"
+                    - "dynamodb:GetRecords"
+                    - "dynamodb:Query"
+                    - "dynamodb:Scan"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:PutItem"
+                    - "dynamodb:UpdateItem"
+                    - "dynamodb:DeleteItem"
+                    - "dynamodb:BatchGetItem"
+                    - "dynamodb:BatchWriteItem"
+                    - "dynamodb:ConditionCheckItem"
+                  Resource:
+                    - "arn:aws:dynamodb:*:*:table/${self:custom.tvEditorTable}"
+                    - "arn:aws:dynamodb:*:*:table/${self:custom.tvEditorTable}/index/*"
+    TVEditorTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tvEditorTable}
+        AttributeDefinitions:
+          - AttributeName: hashId
+            AttributeType: S
+          - AttributeName: sortId
+            AttributeType: S
+          - AttributeName: secondSortId
+            AttributeType: S
+          - AttributeName: thirdSortId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: hashId
+            KeyType: HASH
+          - AttributeName: sortId
+            KeyType: RANGE
+        LocalSecondaryIndexes:
+          - IndexName: secondSortIndex
+            KeySchema:
+              - AttributeName: hashId
+                KeyType: HASH
+              - AttributeName: secondSortId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: thirdSortIndex
+            KeySchema:
+              - AttributeName: hashId
+                KeyType: HASH
+              - AttributeName: thirdSortId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        Tags:
+          - Key: service
+            Value: ${self:custom.service}
+          - Key: function
+            Value: onlineOrderingTables
+
 
 functions:
   auth:
