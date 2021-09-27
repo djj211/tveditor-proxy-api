@@ -17,7 +17,6 @@ const getTvDbShow = async (id: number, name: string) => {
 
 export const getShows = async (_req: express.Request, res: express.Response, next: express.NextFunction) => {
   const foundShows = await flexgetService.getSeries();
-  console.log('FOUND SHOWS =>', foundShows);
   const shows = await Promise.all(
     foundShows.map(async (f) => {
       return {
@@ -37,10 +36,20 @@ export const postShow = async (req: express.Request, res: express.Response, next
 };
 
 export const putShow = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { showId, name, season, episode } = req.body;
+  const showId = req.params.showId;
+  const { name, season, episode } = req.body;
   const flexgetShow = await flexgetService.getSingleSeries(showId);
   if (flexgetShow) {
-    const resp = await flexgetService.editSeries(showId, name, season, episode);
+    if (name !== flexgetShow.name) {
+      const showMapping = await flexgetService.getTVDBMapping(+showId);
+      if (showMapping) {
+        await flexgetService.deleteSeries(+showId, flexgetShow.name);
+        const resp = await flexgetService.addSeries(name, season, episode, showMapping.tvdbId);
+        return res.json(resp);
+      }
+    }
+
+    const resp = await flexgetService.editSeries(+showId, name, season, episode);
     return res.json(resp);
   }
 

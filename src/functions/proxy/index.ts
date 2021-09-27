@@ -11,7 +11,7 @@ export const searchPath = '/api/search';
 
 app.get(showsPath, getShows);
 app.post(showsPath, postShow);
-app.put(showsPath, putShow);
+app.put(`${showsPath}/:showId`, putShow);
 app.delete(`${showsPath}/:showId`, deleteShow);
 app.get(searchPath, searchShow);
 
