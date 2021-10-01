@@ -11,28 +11,50 @@ export interface TVDBepisode extends Episode {
   airDate?: string;
 }
 
-export interface FlexgetShow {
+interface BaseFlexgetItem {
   id: number;
   name: string;
+}
+
+export interface FlexgetShow extends BaseFlexgetItem {
   begin_episode?: Episode;
   latest_entity?: FlexgetLastSeen;
 }
 
-export interface TVDBItem {
-  aliases: string[];
+interface TVDBBaseItem {
   id: string;
   name: string;
-  network?: string;
   image_url: string;
-  status: string;
   overview?: string;
+}
+
+export interface TVDBShowItem extends TVDBBaseItem {
+  aliases: string[];
+  network?: string;
+  status: string;
   latestEpisode?: TVDBepisode;
   nextEpisode?: TVDBepisode;
 }
 
+export interface FlexgetMovie extends BaseFlexgetItem {
+  added_on: string;
+  list_id: number;
+  year: number;
+  movies_list_ids: number[];
+}
+
+export interface TVDBMovieItem extends TVDBBaseItem {
+  releaseDate: string;
+}
+
+export interface Movie {
+  flexget: FlexgetMovie;
+  tvdb: TVDBMovieItem;
+}
+
 export interface Show {
   flexget: FlexgetShow;
-  tvdb: TVDBItem;
+  tvdb: TVDBShowItem;
 }
 
 export interface FlexgetTask {

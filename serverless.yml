@@ -13,7 +13,8 @@ custom:
   tvdbPin: ${opt:tvdbPin}
   tvdbApiKey: ${opt:tvdbApiKey}
   cognitoClientId: ${opt:cognitoClientId}
-  
+  movieListId: ${opt:movieListId}
+
 plugins:
   - serverless-webpack
   - serverless-attach-managed-policy
@@ -42,7 +43,7 @@ provider:
     TVDB_PIN: "${self:custom.tvdbPin}"
     TVDB_API_KEY: "${self:custom.tvdbApiKey}"
     COGNITO_CLIENT_ID: "${self:custom.cognitoClientId}"
-
+    MOVIE_LIST_ID: "${self:custom.movieListId}"
 resources:
   Resources:
     TVEditorProxyAPIRole:

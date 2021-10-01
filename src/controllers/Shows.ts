@@ -6,13 +6,13 @@ const flexgetService = new FlexgetService();
 const tvdbService = new TVDBService();
 
 const getTvDbShow = async (id: number, name: string) => {
-  const showMapping = await flexgetService.getTVDBMapping(id);
+  const showMapping = await flexgetService.getTVDBShowMapping(id);
 
   if (showMapping) {
     return tvdbService.getSeries(showMapping.tvdbId);
   }
 
-  return tvdbService.searchOne(name);
+  return tvdbService.searchOneShow(name);
 };
 
 export const getShows = async (_req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -41,7 +41,7 @@ export const putShow = async (req: express.Request, res: express.Response, next:
   const flexgetShow = await flexgetService.getSingleSeries(showId);
   if (flexgetShow) {
     if (name !== flexgetShow.name) {
-      const showMapping = await flexgetService.getTVDBMapping(+showId);
+      const showMapping = await flexgetService.getTVDBShowMapping(+showId);
       if (showMapping) {
         await flexgetService.deleteSeries(+showId, flexgetShow.name);
         const resp = await flexgetService.addSeries(name, season, episode, showMapping.tvdbId);
@@ -69,7 +69,7 @@ export const deleteShow = async (req: express.Request, res: express.Response, ne
 
 export const searchShow = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const queryStr = req.query.queryStr as string;
-  console.log('Querying for shows with => ', queryStr);
-  const show = await tvdbService.search(queryStr);
+  console.log(`Searching TVDB show with queryStr = ${queryStr} `);
+  const show = await tvdbService.searchShow(queryStr);
   return res.json(show);
 };

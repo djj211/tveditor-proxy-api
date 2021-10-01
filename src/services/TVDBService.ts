@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import jwt_decode from 'jwt-decode';
 
-import { TVDBItem } from '../interfaces';
+import { TVDBShowItem, TVDBMovieItem } from '../interfaces';
 
 interface DecodedToken {
   exp: number;
@@ -19,7 +19,11 @@ interface TVDBResp {
       status: string;
       primary_language: string;
       overview: string;
+      first_air_time: string;
       tvdb_id: number;
+      overviews: {
+        eng: string;
+      };
       name_translated?: {
         eng?: string;
       };
@@ -40,6 +44,11 @@ interface EpisodeResp {
   data: {
     episodes: TVDBEpisode[];
   };
+}
+
+export enum SEARCH_TYPE {
+  MOVIE = 'movie',
+  SERIES = 'series',
 }
 
 export class TVDBService {
@@ -76,12 +85,16 @@ export class TVDBService {
     };
   };
 
-  public getSeries = async (id: string): Promise<TVDBItem> => {
-    return this.searchOne(id);
+  public getSeries = async (id: string): Promise<TVDBShowItem> => {
+    return this.searchOneShow(id);
   };
 
-  public searchOne = async (show: string): Promise<TVDBItem> => {
-    const resp = await this.search(show, 5);
+  public getMovie = async (id: string): Promise<TVDBMovieItem> => {
+    return this.searchOneMovie(id);
+  };
+
+  public searchOneShow = async (show: string): Promise<TVDBShowItem> => {
+    const resp = await this.searchShow(show, 5);
     const foundShow = resp.find((t) => t.name === show);
     if (foundShow) {
       return foundShow;
@@ -90,13 +103,40 @@ export class TVDBService {
     return resp[0];
   };
 
-  public search = async (show: string, limit?: number): Promise<TVDBItem[]> => {
+  public searchOneMovie = async (movie: string): Promise<TVDBMovieItem> => {
+    const resp = await this.searchMovie(movie, 5);
+    const foundShow = resp.find((t) => t.name === movie);
+    if (foundShow) {
+      return foundShow;
+    }
+
+    return resp[0];
+  };
+
+  private searchTvDB = async (show: string, type?: SEARCH_TYPE, limit?: number): Promise<TVDBResp> => {
     const config = await this.getConfig();
     const sanitizedLimit = limit ? limit : 10;
+    const sanitizedType = type ? type : 'series';
     const { data: resp } = await axios.get<TVDBResp>(
-      `${this.BASE_URL}/search?q=${show}&limit=${sanitizedLimit}&type=series`,
+      `${this.BASE_URL}/search?q=${show}&limit=${sanitizedLimit}&type=${sanitizedType}`,
       config,
     );
+    return resp;
+  };
+
+  public searchMovie = async (show: string, limit?: number): Promise<TVDBMovieItem[]> => {
+    const resp = await this.searchTvDB(show, SEARCH_TYPE.MOVIE, limit);
+    return resp.data.map((t) => ({
+      image_url: t.image_url,
+      name: t.name,
+      overview: t.primary_language !== 'eng' && t.overviews?.eng ? t.overviews?.eng : t.overview,
+      id: t.objectID,
+      releaseDate: t.first_air_time,
+    }));
+  };
+
+  public searchShow = async (show: string, limit?: number): Promise<TVDBShowItem[]> => {
+    const resp = await this.searchTvDB(show, SEARCH_TYPE.SERIES, limit);
     const today = new Date();
     const allDataPromises = resp.data.map(async (t) => {
       const seriesEps = await this.episodes(t.tvdb_id);
