@@ -1,3 +1,5 @@
+import { Torrent } from 'torrent-search-api';
+
 export interface Episode {
   season: number;
   number: number;
@@ -128,4 +130,38 @@ export interface CreateFlexget {
   begin_episode: string;
   name: string;
   alternate_names?: string[];
+}
+
+export enum DELUGE_DOWNLOAD_TYPE {
+  MOVIE = 'movie',
+  SHOW = 'show',
+}
+
+export interface DownloadOptions {
+  appendPath?: string;
+}
+
+interface BaseDelugeDownload {
+  downloadType?: DELUGE_DOWNLOAD_TYPE;
+  options?: DownloadOptions;
+}
+
+export interface DelugeDownload extends BaseDelugeDownload {
+  magnetUrl: string;
+}
+
+export enum TORRENT_SEARCH_TYPE {
+  MOVIES = 'Movies',
+  SHOWS = 'TV',
+  ALL = 'ALL',
+}
+
+export interface TorrentSearch {
+  query: string;
+  limit: number;
+  type?: TORRENT_SEARCH_TYPE;
+}
+
+export interface TorrentSearchDownload extends BaseDelugeDownload {
+  torrent: Torrent;
 }

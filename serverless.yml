@@ -14,7 +14,13 @@ custom:
   tvdbApiKey: ${opt:tvdbApiKey}
   cognitoClientId: ${opt:cognitoClientId}
   movieListId: ${opt:movieListId}
-
+  delugeUrl: ${opt:delugeUrl}
+  delugeWebPass: ${opt:delugeWebPass}
+  delugeDownloadPath: ${opt:delugeDownloadPath}
+  delugeMoveCompleteMoviePath: ${opt:delugeMoveCompleteMoviePath}
+  delugeMoveCompleteShowPath: ${opt:delugeMoveCompleteShowPath}
+  torrentSearchLayer: ${opt:torrentSearchLayer}
+  
 plugins:
   - serverless-webpack
   - serverless-attach-managed-policy
@@ -25,7 +31,7 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   stage: dev
   region: us-east-1
   timeout: 30
@@ -44,6 +50,12 @@ provider:
     TVDB_API_KEY: "${self:custom.tvdbApiKey}"
     COGNITO_CLIENT_ID: "${self:custom.cognitoClientId}"
     MOVIE_LIST_ID: "${self:custom.movieListId}"
+    DELUGE_URL: ${self:custom.delugeUrl}
+    DELUGE_WEB_PASS: ${self:custom.delugeWebPass}
+    DELUGE_DOWNLOAD_PATH: ${self:custom.delugeDownloadPath}
+    DELUGE_MOVE_COMPLETE_MOVIE_PATH: ${self:custom.delugeMoveCompleteMoviePath}
+    DELUGE_MOVE_COMPLETE_SHOW_PATH: ${self:custom.delugeMoveCompleteShowPath}
+
 resources:
   Resources:
     TVEditorProxyAPIRole:
@@ -159,6 +171,8 @@ functions:
     handler: src/functions/proxy/index.handler
     role: TVEditorProxyAPIRole
     timeout: 30
+    layers:
+      - ${self:custom.torrentSearchLayer}
     events:
       - http:
           method: any

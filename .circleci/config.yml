@@ -1,0 +1,86 @@
+version: 2.1
+orbs:
+  aws-s3: circleci/aws-s3@1.0.15
+workflows:
+  build-deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /noop-.*/
+      - deploy-dev:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+      - deploy-prod:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+jobs:
+  build:
+    docker:
+      - image: cimg/node:14.13.0
+
+    working_directory: ~/roomPlanner
+
+    steps:
+      - checkout
+      - run: npm install
+
+  deploy-dev:
+    # using docker image that already contains aws CLI
+    docker:
+      - image: mcfisher83/evo-globalhawk-api
+
+    working_directory: ~/roomPlanner
+
+    steps:
+      - checkout
+      - run:
+          name: Configure AWS
+          command: |
+            aws configure set aws_access_key_id ${DEV_AWS_ACCESS_KEY_ID}
+            aws configure set aws_secret_access_key ${DEV_AWS_SECRET_ACCESS_KEY}
+            aws configure set region ${DEV_REGION}
+      - run:
+          name: Install Serverless CLI
+          command: |
+            npm i -g serverless
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - run:
+          name: Build and Deploy to AWS Dev
+          command: |
+            npm run build && sls deploy --userPoolId ${DEV_COGNITO_USER_POOL_ID} --account ${DEV_AWS_ACCOUNT} --chromeLambdaLayerVersion ${DEV_CHROME_LAMBDA_LAYER_VERSION} --pdfBucket ${DEV_PDF_BUCKET} --loadDataBucket ${DEV_LOAD_DATA_BUCKET} --imageMagickLambdaLayerVersion ${DEV_IMAGE_MAGICK_LAYER_VERSION} --sendGridAPIKey ${DEV_SEND_GRID_API_KEY} --appUrl ${DEV_APP_URL} --sharpLambdaLayer ${DEV_SHARP_LAMBDA_LAYER}  --stage dev
+
+  deploy-prod:
+    # using docker image that already contains aws CLI
+    docker:
+      - image: mcfisher83/evo-globalhawk-api
+
+    working_directory: ~/roomPlanner
+
+    steps:
+      - checkout
+      - run:
+          name: Configure AWS
+          command: |
+            aws configure set aws_access_key_id ${PROD_AWS_ACCESS_KEY_ID}
+            aws configure set aws_secret_access_key ${PROD_AWS_SECRET_ACCESS_KEY}
+            aws configure set region ${PROD_REGION}
+      - run:
+          name: Install Serverless CLI
+          command: |
+            npm i -g serverless
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - run:
+          name: Build and Deploy to AWS Prod
+          command: |
+            npm run build && sls deploy --userPoolId ${PROD_COGNITO_USER_POOL_ID} --account ${PROD_AWS_ACCOUNT} --chromeLambdaLayerVersion ${PROD_CHROME_LAMBDA_LAYER_VERSION} --pdfBucket ${PROD_PDF_BUCKET} --loadDataBucket ${PROD_LOAD_DATA_BUCKET} --imageMagickLambdaLayerVersion ${PROD_IMAGE_MAGICK_LAYER_VERSION} --sendGridAPIKey ${PROD_SEND_GRID_API_KEY} --appUrl ${PROD_APP_URL} --sharpLambdaLayer ${PROD_SHARP_LAMBDA_LAYER} --stage prod

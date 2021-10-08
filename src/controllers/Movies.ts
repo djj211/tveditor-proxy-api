@@ -21,7 +21,7 @@ export const getMovies = async (_req: express.Request, res: express.Response, ne
     foundMovies.map(async (f) => {
       return {
         flexget: f,
-        tvdb: await getTvDbMovie(f.id, f.title),
+        tvdb: await getTvDbMovie(f.id, f.name),
       };
     }),
   );
@@ -35,7 +35,7 @@ export const putMovie = async (req: express.Request, res: express.Response, next
   const flexgetMovie = await flexgetService.getSingleMovie(movieId);
 
   if (flexgetMovie) {
-    if (name !== flexgetMovie.title || year !== flexgetMovie.year) {
+    if (name !== flexgetMovie.name || year !== flexgetMovie.year) {
       const movieMapping = await flexgetService.getTVDBMovieMapping(+movieId);
       if (movieMapping) {
         await flexgetService.deleteMovie(+movieId);
