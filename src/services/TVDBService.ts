@@ -148,9 +148,9 @@ export class TVDBService {
           const aDate = new Date(acc.aired);
           // Handle 2 eps on same day
           if (cDate.getTime() === aDate.getTime() && cDate <= today) {
-            return curr.number >= acc.number ? curr : acc;
+            return curr.number >= acc.number && curr.seasonNumber > 0 && curr.number > 0 ? curr : acc;
           }
-          return cDate > aDate && cDate <= today ? curr : acc;
+          return cDate > aDate && cDate <= today && curr.seasonNumber > 0 && curr.number > 0 ? curr : acc;
         },
         { aired: '', number: 0, seasonNumber: 0 },
       );
@@ -158,7 +158,7 @@ export class TVDBService {
       const nextUp = seriesEps.data.episodes.reduce((acc, curr) => {
         const cDate = new Date(curr.aired);
 
-        if (cDate > today) {
+        if (cDate > today && curr.seasonNumber > 0 && curr.number > 0) {
           const aDate = new Date(acc.aired);
 
           if (aDate <= today) {

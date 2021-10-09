@@ -7,8 +7,24 @@ export class TorrentSearchService {
     TorrentSearchApi.enablePublicProviders();
   }
 
-  private doSearch(query: string, category: string, limit: number) {
-    return TorrentSearchApi.search(query, category, limit);
+  private async doSearch(query: string, category: string, limit: number) {
+    const torrents = await TorrentSearchApi.search(query, category, limit);
+
+    return torrents.reduce((acc, torrent) => {
+      const found = acc.find(
+        (a) =>
+          a.desc === torrent.desc &&
+          a.magnet === torrent.magnet &&
+          a.size === torrent.size &&
+          a.title === torrent.title,
+      );
+
+      if (!found) {
+        acc.push(torrent);
+      }
+
+      return acc;
+    }, [] as Array<TorrentSearchApi.Torrent>);
   }
 
   public search(query: string, limit: number, type?: TORRENT_SEARCH_TYPE) {
