@@ -34,7 +34,7 @@ provider:
   runtime: nodejs14.x
   stage: dev
   region: us-east-1
-  timeout: 30
+  timeout: 60
 
   environment:
     USER_POOL_ID: "${self:custom.userPoolId}"
@@ -170,7 +170,7 @@ functions:
   proxy-api:
     handler: src/functions/proxy/index.handler
     role: TVEditorProxyAPIRole
-    timeout: 30
+    timeout: 60
     layers:
       - ${self:custom.torrentSearchLayer}
     events:

@@ -3,28 +3,82 @@ import * as TorrentSearchApi from 'torrent-search-api';
 import { TORRENT_SEARCH_TYPE } from '../interfaces';
 
 export class TorrentSearchService {
-  constructor() {
+  private searchProvider: string | undefined;
+
+  constructor(provider?: string) {
+    this.searchProvider = provider;
+  }
+
+  public setProvider(provider: string) {
+    this.searchProvider = provider;
+  }
+
+  private setupProviders(category: string) {
+    TorrentSearchApi.disableAllProviders();
+
+    if (this.searchProvider) {
+      TorrentSearchApi.enableProvider(this.searchProvider);
+      return;
+    }
+
     TorrentSearchApi.enablePublicProviders();
+
+    if (category === TORRENT_SEARCH_TYPE.ALL) {
+      return;
+    }
+
+    const activeProviders = TorrentSearchApi.getActiveProviders();
+    activeProviders.forEach((provider) => {
+      const categories = provider.categories as Array<string>;
+      const hasCateogry = categories.some((c) => c === category);
+      if (!hasCateogry) {
+        TorrentSearchApi.disableProvider(provider.name);
+      }
+    });
+  }
+
+  private setupSingleProvider(provider: string) {
+    TorrentSearchApi.disableAllProviders();
+
+    TorrentSearchApi.enableProvider(provider);
   }
 
   private async doSearch(query: string, category: string, limit: number) {
-    const torrents = await TorrentSearchApi.search(query, category, limit);
+    try {
+      this.setupProviders(category);
 
-    return torrents.reduce((acc, torrent) => {
-      const found = acc.find(
-        (a) =>
-          a.desc === torrent.desc &&
-          a.magnet === torrent.magnet &&
-          a.size === torrent.size &&
-          a.title === torrent.title,
-      );
+      const torrents = await TorrentSearchApi.search(query, category, limit);
 
-      if (!found) {
-        acc.push(torrent);
-      }
+      return torrents.reduce((acc, torrent) => {
+        let containsSearchString = torrent.title.toLowerCase().includes(query.toLowerCase());
 
-      return acc;
-    }, [] as Array<TorrentSearchApi.Torrent>);
+        if (!containsSearchString && torrent.desc) {
+          containsSearchString = torrent.desc.toLowerCase().includes(query.toLowerCase());
+        }
+
+        // Don't return torrents that do not contain serach string. Wastes my time.
+        if (!containsSearchString) {
+          return acc;
+        }
+
+        const found = acc.find(
+          (a) =>
+            a.desc === torrent.desc &&
+            a.magnet === torrent.magnet &&
+            a.size === torrent.size &&
+            a.title === torrent.title,
+        );
+
+        if (!found) {
+          acc.push(torrent);
+        }
+
+        return acc;
+      }, [] as Array<TorrentSearchApi.Torrent>);
+    } catch (ex) {
+      console.log('Error Performing Search => ', ex);
+      return Promise.resolve([] as Array<TorrentSearchApi.Torrent>);
+    }
   }
 
   public search(query: string, limit: number, type?: TORRENT_SEARCH_TYPE) {
@@ -44,9 +98,14 @@ export class TorrentSearchService {
     return this.doSearch(query, 'All', limit);
   }
 
-  public searchShows(query: string, limit: number) {
-    console.log('DOING TV SEARCH');
-    return this.doSearch(query, 'TV', limit);
+  public async searchShows(query: string, limit: number) {
+    const torrents = await this.doSearch(query, 'TV', limit);
+    this.setupSingleProvider('Eztv');
+    const ezTVTorrents = await this.doSearch(query, 'All', 100);
+
+    const combinedResults = [...torrents, ...ezTVTorrents];
+
+    return combinedResults.sort((torrentA: any, torrentB: any) => (torrentA.seeds > torrentB.seeds ? -1 : 1));
   }
 
   public searchMovies(query: string, limit: number) {

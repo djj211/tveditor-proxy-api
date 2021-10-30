@@ -12,8 +12,10 @@ export const searchTorrents = async (req: express.Request, res: express.Response
   const query = req.query.query as string;
   const type = req.query.type as TORRENT_SEARCH_TYPE;
   const limit = req.query.limit as string;
+  const provider = req.query.provider as string;
+  torrentSearchSerice.setProvider(provider);
 
-  console.log('DOING SEARCH WITH query => ', query, ' limit => ', limit, ' and type ', type);
+  console.log('DOING SEARCH WITH query => ', query, ' limit => ', limit, 'provider => ', provider, ' and type ', type);
   const results = await torrentSearchSerice.search(query, +limit, type);
 
   res.json(results);
