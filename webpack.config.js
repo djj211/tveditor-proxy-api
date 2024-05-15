@@ -42,7 +42,7 @@ module.exports = {
       },
     ],
   },
-  externals: ['torrent-search-api'],
+  externals: ['torrent-search-api', '@aws-sdk/client-cognito-identity-provider', '@aws-sdk/client-dynamodb'],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },

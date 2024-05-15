@@ -1,4 +1,4 @@
-import { ReadConsistency } from '@aws/dynamodb-data-mapper';
+import { ReadConsistency } from '@nova-odm/mapper';
 
 import { configHashKey, movieMappingModel } from '../Label';
 import { MovieMappingModel } from '../orm/MovieMappingModel';

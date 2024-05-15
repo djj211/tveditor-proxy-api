@@ -1,4 +1,4 @@
-import { ReadConsistency } from '@aws/dynamodb-data-mapper';
+import { ReadConsistency } from '@nova-odm/mapper';
 
 import { configHashKey, showMappingModel } from '../Label';
 import { ShowMappingModel } from '../orm/ShowMappingModel';

@@ -1,4 +1,4 @@
-import { hashKey, rangeKey, attribute } from '@aws/dynamodb-data-mapper-annotations';
+import { hashKey, rangeKey, attribute } from '@nova-odm/annotations';
 
 /**
  * The base object that shouldb e used when writing to the online ordering table
