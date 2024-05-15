@@ -134,7 +134,10 @@ export class FlexgetService {
     task.config.series.default = task.config.series.default.filter((s) => s !== name);
 
     const showMappingToDelete = await this.showMappingRepo.get(showId);
-    await this.showMappingRepo.delete(showMappingToDelete);
+
+    if (showMappingToDelete) {
+      await this.showMappingRepo.delete(showMappingToDelete);
+    }
 
     await axios.put<FlexgetTask>(`${this.BASE_URL}/tasks/${this.TASK_NAME}`, task, this.AXIOS_CONFIG);
 
@@ -207,7 +210,10 @@ export class FlexgetService {
     );
 
     const movieMappingToDelete = await this.movieMappingRepo.get(movieId);
-    await this.movieMappingRepo.delete(movieMappingToDelete);
+
+    if (movieMappingToDelete) {
+      await this.movieMappingRepo.delete(movieMappingToDelete);
+    }
 
     return movie;
   };

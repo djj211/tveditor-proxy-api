@@ -1,4 +1,4 @@
-import { DataMapper } from '@aws/dynamodb-data-mapper';
+import { DataMapper, StringToAnyObjectMap } from '@aws/dynamodb-data-mapper';
 import { DynamoDB } from 'aws-sdk';
 import {
   greaterThanOrEqualTo,
@@ -31,11 +31,11 @@ export class BaseRepository {
     this.mapper = new DataMapper({ client });
   }
 
-  async put<T>(record: T): Promise<T> {
+  async put<T extends StringToAnyObjectMap = StringToAnyObjectMap>(record: T): Promise<T> {
     return this.mapper.put(record);
   }
 
-  async putBatch<T>(records: T[]): Promise<T[]> {
+  async putBatch<T extends StringToAnyObjectMap = StringToAnyObjectMap>(records: T[]): Promise<T[]> {
     const saved: T[] = [];
 
     try {
@@ -81,7 +81,7 @@ export class BaseRepository {
     return saved;
   }
 
-  async patch<T>(record: T): Promise<T> {
+  async patch<T extends StringToAnyObjectMap = StringToAnyObjectMap>(record: T): Promise<T> {
     const patchRecord: BaseTvEditorTableModel<T> = record as unknown as BaseTvEditorTableModel<T>;
     let updateDate = new Date();
     updateDate = new Date(
@@ -96,11 +96,11 @@ export class BaseRepository {
     return this.mapper.update(record, { onMissing: 'skip' });
   }
 
-  async delete<T>(entity: T): Promise<T | undefined> {
+  async delete<T extends StringToAnyObjectMap = StringToAnyObjectMap>(entity: T): Promise<T | undefined> {
     return this.mapper.delete(entity);
   }
 
-  async deleteBatch<T>(records: T[]): Promise<T[]> {
+  async deleteBatch<T extends StringToAnyObjectMap = StringToAnyObjectMap>(records: T[]): Promise<T[]> {
     const confirmedDeletes: T[] = [];
 
     try {
