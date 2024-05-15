@@ -42,7 +42,7 @@ module.exports = {
       },
     ],
   },
-  externals: ['aws-sdk', 'torrent-search-api'],
+  externals: ['torrent-search-api'],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },

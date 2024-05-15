@@ -3,23 +3,23 @@ custom:
   service: "tveditor-proxy-api"
   stage: ${opt:stage, self:provider.stage}
   tvEditorTable: "tveditor-${self:custom.stage}"
-  userPoolId: ${opt:userPoolId}
+  userPoolId: ${param:userPoolId}
   region: ${opt:region, self:provider.region}
-  flexgetApiUrl: ${opt:flexgetApiUrl}
-  flexgetApiUser: ${opt:flexgetApiUser}
-  flexgetApiPass: ${opt:flexgetApiPass}
-  taskName: ${opt:taskName}
-  tvdbApiUrl: ${opt:tvdbApiUrl}
-  tvdbPin: ${opt:tvdbPin}
-  tvdbApiKey: ${opt:tvdbApiKey}
-  cognitoClientId: ${opt:cognitoClientId}
-  movieListId: ${opt:movieListId}
-  delugeUrl: ${opt:delugeUrl}
-  delugeWebPass: ${opt:delugeWebPass}
-  delugeDownloadPath: ${opt:delugeDownloadPath}
-  delugeMoveCompleteMoviePath: ${opt:delugeMoveCompleteMoviePath}
-  delugeMoveCompleteShowPath: ${opt:delugeMoveCompleteShowPath}
-  torrentSearchLayer: ${opt:torrentSearchLayer}
+  flexgetApiUrl: ${param:flexgetApiUrl}
+  flexgetApiUser: ${param:flexgetApiUser}
+  flexgetApiPass: ${param:flexgetApiPass}
+  taskName: ${param:taskName}
+  tvdbApiUrl: ${param:tvdbApiUrl}
+  tvdbPin: ${param:tvdbPin}
+  tvdbApiKey: ${param:tvdbApiKey}
+  cognitoClientId: ${param:cognitoClientId}
+  movieListId: ${param:movieListId}
+  delugeUrl: ${param:delugeUrl}
+  delugeWebPass: ${param:delugeWebPass}
+  delugeDownloadPath: ${param:delugeDownloadPath}
+  delugeMoveCompleteMoviePath: ${param:delugeMoveCompleteMoviePath}
+  delugeMoveCompleteShowPath: ${param:delugeMoveCompleteShowPath}
+  torrentSearchLayer: ${param:torrentSearchLayer}
   
 plugins:
   - serverless-webpack
@@ -31,7 +31,7 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   stage: dev
   region: us-east-1
   timeout: 60

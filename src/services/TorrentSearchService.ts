@@ -23,6 +23,9 @@ export class TorrentSearchService {
 
     TorrentSearchApi.enablePublicProviders();
 
+    TorrentSearchApi.disableProvider('Eztv');
+    TorrentSearchApi.disableProvider('TorrentProject');
+
     if (category === TORRENT_SEARCH_TYPE.ALL) {
       return;
     }
@@ -37,17 +40,19 @@ export class TorrentSearchService {
     });
   }
 
-  private setupSingleProvider(provider: string) {
-    TorrentSearchApi.disableAllProviders();
+  // private setupSingleProvider(provider: string) {
+  //   TorrentSearchApi.disableAllProviders();
 
-    TorrentSearchApi.enableProvider(provider);
-  }
+  //   TorrentSearchApi.enableProvider(provider);
+  // }
 
   private async doSearch(query: string, category: string, limit: number) {
     try {
       this.setupProviders(category);
 
       const torrents = await TorrentSearchApi.search(query, category, limit);
+
+      console.log('RESULTS => ', torrents);
 
       return torrents.reduce((acc, torrent) => {
         let containsSearchString = torrent.title.toLowerCase().includes(query.toLowerCase());
@@ -100,12 +105,13 @@ export class TorrentSearchService {
 
   public async searchShows(query: string, limit: number) {
     const torrents = await this.doSearch(query, 'TV', limit);
+    /*
     this.setupSingleProvider('Eztv');
     const ezTVTorrents = await this.doSearch(query, 'All', 100);
 
     const combinedResults = [...torrents, ...ezTVTorrents];
-
-    return combinedResults.sort((torrentA: any, torrentB: any) => (torrentA.seeds > torrentB.seeds ? -1 : 1));
+    */
+    return torrents.sort((torrentA: any, torrentB: any) => (torrentA.seeds > torrentB.seeds ? -1 : 1));
   }
 
   public searchMovies(query: string, limit: number) {

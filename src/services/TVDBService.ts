@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import jwt_decode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 
 import { TVDBShowItem, TVDBMovieItem } from '../interfaces';
 
@@ -61,7 +61,7 @@ export class TVDBService {
 
   private login = async () => {
     if (this.token) {
-      const decoded: DecodedToken = jwt_decode(this.token);
+      const decoded: DecodedToken = jwtDecode(this.token);
       const currTime = new Date().getTime();
 
       if (decoded.exp * 1000 > currTime) {
