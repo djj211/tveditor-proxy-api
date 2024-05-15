@@ -1,15 +1,14 @@
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
-import { InitiateAuthRequest } from 'aws-sdk/clients/cognitoidentityserviceprovider';
+import { InitiateAuthRequest, CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 export class CognitoService {
-  private cognitoidentityserviceprovider: CognitoIdentityServiceProvider;
+  private cognitoidentityserviceprovider: CognitoIdentityProvider;
 
   constructor() {
-    this.cognitoidentityserviceprovider = new CognitoIdentityServiceProvider({ apiVersion: '2016-04-18' });
+    this.cognitoidentityserviceprovider = new CognitoIdentityProvider({ apiVersion: '2016-04-18' });
   }
 
   private async doAuth(params: InitiateAuthRequest) {
-    const authResult = await this.cognitoidentityserviceprovider.initiateAuth(params).promise();
+    const authResult = await this.cognitoidentityserviceprovider.initiateAuth(params);
 
     return {
       token: authResult.AuthenticationResult?.AccessToken,

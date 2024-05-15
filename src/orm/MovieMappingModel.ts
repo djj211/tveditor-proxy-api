@@ -1,4 +1,4 @@
-import { table, attribute } from '@aws/dynamodb-data-mapper-annotations';
+import { table, attribute } from '@nova-odm/annotations';
 import { BaseTvEditorTableModel } from './BaseTvEditorTableModel';
 
 /**

@@ -1,11 +1,11 @@
-import { DataMapper, StringToAnyObjectMap } from '@aws/dynamodb-data-mapper';
-import { DynamoDB } from 'aws-sdk';
+import { DataMapper, StringToAnyObjectMap } from '@nova-odm/mapper';
+import { DynamoDB, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 import {
   greaterThanOrEqualTo,
   AndExpression,
   ConditionExpressionSubject,
   GreaterThanOrEqualToExpressionPredicate,
-} from '@aws/dynamodb-expressions';
+} from '@nova-odm/expressions';
 import { BaseTvEditorTableModel } from '../orm/BaseTvEditorTableModel';
 import { enumerableErrors } from '../ErrorHandler';
 
@@ -23,7 +23,7 @@ export class BaseRepository {
   constructor(name: string) {
     this.name = name;
 
-    const options: DynamoDB.ClientConfiguration = {
+    const options: DynamoDBClientConfig = {
       region: process.env.DYNAMODB_LOCAL_REGION,
       endpoint: process.env.DYNAMODB_LOCAL_ENDPOINT,
     };

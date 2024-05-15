@@ -9,9 +9,9 @@
     "debug": "cross-env SLS_DEBUG=* node --inspect=localhost:9011 node_modules/serverless/bin/serverless.js offline -s sandbox --noAuth --httpPort 4011 --lambdaPort 3011"
   },
   "dependencies": {
-    "@aws/dynamodb-data-mapper-annotations": "^0.7.3",
-    "amazon-cognito-identity-js-node": "^0.0.3",
-    "aws-lambda": "^1.0.7",
+    "@nova-odm/annotations": "^0.8.7",
+    "@nova-odm/expressions": "^0.8.7",
+    "@nova-odm/mapper": "^0.8.7",
     "axios": "^1.6.8",
     "bent": "^7.3.12",
     "deluge-rpc": "^1.0.5",
@@ -23,7 +23,9 @@
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.83",
+    "@aws-sdk/client-cognito-identity-provider": "^3.576.0",
+    "@aws-sdk/client-dynamodb": "^3.576.0",
+    "@types/aws-lambda": "^8.10.137",
     "@types/bent": "^7.3.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/jwk-to-pem": "^2.0.1",
@@ -31,7 +33,6 @@
     "@types/node": "^20.12.12",
     "@types/request-promise": "^4.1.48",
     "@types/torrent-search-api": "^2.0.0",
-    "aws-sdk": "^2.991.0",
     "cache-loader": "^4.1.0",
     "cross-env": "^7.0.3",
     "dotenv-webpack": "^8.1.0",
